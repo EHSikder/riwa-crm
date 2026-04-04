@@ -1,8 +1,8 @@
-import { Dropbox } from 'dropbox'
+import { Dropbox, DropboxAuth } from 'dropbox'
 
 const dropbox = new Dropbox({
-  auth: process.env.DROPBOX_API_KEY || '',
-})
+  auth: new DropboxAuth({ clientId: process.env.DROPBOX_API_KEY || '' }),
+} as any)
 
 export const uploadFileToDropbox = async (
   filePath: string,
@@ -23,7 +23,7 @@ export const uploadFileToDropbox = async (
     const sharedLinkResponse = await dropbox.sharingCreateSharedLinkWithSettings({
       path: uploadResponse.result.path_display || dropboxPath,
       settings: {
-        requested_visibility: 'public',
+        requested_visibility: 'public' as any,
       },
     })
 
