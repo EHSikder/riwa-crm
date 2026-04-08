@@ -1,13 +1,10 @@
 {
   "version": 2,
-  "framework": "vite",
-  "buildCommand": "cd client && npm install && npm run build",
+  "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "npm install",
   "env": {
     "VITE_API_URL": "https://riwa-crm-api.onrender.com"
   },
-  "envPrefix": "VITE_",
   "rewrites": [
     {
       "source": "/api/(.*)",
