@@ -9,10 +9,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Import routes
-import clientRoutes from './routes/clients';
-import dealRoutes from './routes/deals';
-import taskRoutes from './routes/tasks';
-import dashboardRoutes from './routes/dashboard';
+import clientRoutes from './routes/clients.js';
+import dealRoutes from './routes/deals.js';
+import taskRoutes from './routes/tasks.js';
+import dashboardRoutes from './routes/dashboard.js';
 
 dotenv.config();
 
