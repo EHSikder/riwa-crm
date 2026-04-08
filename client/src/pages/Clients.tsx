@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Plus, Search } from 'lucide-react'
 
 export default function Clients() {
-  const [clients, setClients] = useState([
+  const [clients] = useState([
     { id: 1, name: 'Acme Corp', industry: 'Technology', status: 'Active', lastContact: '2024-03-15' },
     { id: 2, name: 'Global Industries', industry: 'Manufacturing', status: 'Active', lastContact: '2024-03-10' },
     { id: 3, name: 'Tech Solutions', industry: 'Software', status: 'Prospect', lastContact: '2024-03-05' },
