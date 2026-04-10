@@ -14,10 +14,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     if (error) throw error
 
-    res.json({
-      success: true,
-      data: data as Client[],
-    })
+    res.json(data || [])
   } catch (error: any) {
     res.status(500).json({
       success: false,
@@ -39,10 +36,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
     if (error) throw error
 
-    res.json({
-      success: true,
-      data: data as Client,
-    })
+    res.json(data || {})
   } catch (error: any) {
     res.status(500).json({
       success: false,
@@ -63,10 +57,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     if (error) throw error
 
-    res.status(201).json({
-      success: true,
-      data: data?.[0] as Client,
-    })
+    res.status(201).json(data?.[0] || {})
   } catch (error: any) {
     res.status(500).json({
       success: false,
@@ -89,10 +80,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 
     if (error) throw error
 
-    res.json({
-      success: true,
-      data: data?.[0] as Client,
-    })
+    res.json(data?.[0] || {})
   } catch (error: any) {
     res.status(500).json({
       success: false,
@@ -113,10 +101,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
     if (error) throw error
 
-    res.json({
-      success: true,
-      message: 'Client deleted successfully',
-    })
+    res.json({ success: true })
   } catch (error: any) {
     res.status(500).json({
       success: false,

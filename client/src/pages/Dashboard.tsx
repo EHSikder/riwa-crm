@@ -1,8 +1,30 @@
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
+interface Stats {
+  totalClients: number
+  totalDeals: number
+  totalTasks: number
+  totalEmployees: number
+  revenueThisMonth: number
+  conversionRate: number
+}
+
+interface Deal {
+  id: string
+  value?: number
+  created_at?: string
+  stage?: string
+}
+
+interface ChartData {
+  month: string
+  revenue: number
+  deals: number
+}
+
 const Dashboard = () => {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<Stats>({
     totalClients: 0,
     totalDeals: 0,
     totalTasks: 0,
@@ -10,41 +32,65 @@ const Dashboard = () => {
     revenueThisMonth: 0,
     conversionRate: 0,
   })
+  const [chartData, setChartData] = useState<ChartData[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch dashboard stats from API
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
         const apiUrl = (import.meta.env.VITE_API_URL as string) || 'https://riwa-crm-api.onrender.com'
-        const response = await fetch(`${apiUrl}/dashboard/stats`)
-        if (response.ok) {
-          const data = await response.json()
-          setStats(data)
+        
+        // Fetch stats
+        const statsResponse = await fetch(`${apiUrl}/dashboard/stats`)
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json()
+          setStats(statsData)
+        }
+
+        // Fetch deals for chart
+        const dealsResponse = await fetch(`${apiUrl}/deals`)
+        if (dealsResponse.ok) {
+          const deals: Deal[] = await dealsResponse.json()
+          
+          // Group deals by month
+          const monthlyData: Record<string, { revenue: number; deals: number }> = {}
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+          
+          // Initialize all months
+          months.forEach(month => {
+            monthlyData[month] = { revenue: 0, deals: 0 }
+          })
+
+          // Process deals
+          deals.forEach(deal => {
+            if (deal.created_at) {
+              const date = new Date(deal.created_at)
+              const month = months[date.getMonth()]
+              if (monthlyData[month]) {
+                monthlyData[month].deals += 1
+                monthlyData[month].revenue += deal.value || 0
+              }
+            }
+          })
+
+          // Convert to chart format
+          const chartArray = months.map(month => ({
+            month,
+            revenue: monthlyData[month].revenue,
+            deals: monthlyData[month].deals,
+          }))
+
+          setChartData(chartArray)
         }
       } catch (error) {
-        console.error('Failed to fetch stats:', error)
-        // Set dummy data for now
-        setStats({
-          totalClients: 24,
-          totalDeals: 12,
-          totalTasks: 48,
-          totalEmployees: 8,
-          revenueThisMonth: 125000,
-          conversionRate: 28,
-        })
+        console.error('Error fetching dashboard data:', error)
+      } finally {
+        setLoading(false)
       }
     }
-    fetchStats()
-  }, [])
 
-  const chartData = [
-    { month: 'Jan', revenue: 45000, deals: 8 },
-    { month: 'Feb', revenue: 52000, deals: 10 },
-    { month: 'Mar', revenue: 48000, deals: 9 },
-    { month: 'Apr', revenue: 61000, deals: 12 },
-    { month: 'May', revenue: 55000, deals: 11 },
-    { month: 'Jun', revenue: 67000, deals: 14 },
-  ]
+    fetchData()
+  }, [])
 
   const StatCard = ({ label, value, icon }: { label: string; value: string | number; icon: string }) => (
     <div className="card">
@@ -57,6 +103,14 @@ const Dashboard = () => {
       </div>
     </div>
   )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-gray-500">Loading dashboard...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8">
@@ -81,31 +135,43 @@ const Dashboard = () => {
         {/* Revenue Chart */}
         <div className="card">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Revenue Trend</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="#0066FF" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" stroke="#0066FF" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[300px] flex items-center justify-center text-gray-400">
+              No data available
+            </div>
+          )}
         </div>
 
         {/* Deals Chart */}
         <div className="card">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Deals Closed</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="deals" fill="#10B981" />
-            </BarChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="deals" fill="#10B981" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[300px] flex items-center justify-center text-gray-400">
+              No data available
+            </div>
+          )}
         </div>
       </div>
 
