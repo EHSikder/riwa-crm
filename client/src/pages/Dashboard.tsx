@@ -15,7 +15,8 @@ const Dashboard = () => {
     // Fetch dashboard stats from API
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/dashboard/stats')
+        const apiUrl = (import.meta.env.VITE_API_URL as string) || 'https://riwa-crm-api.onrender.com'
+        const response = await fetch(`${apiUrl}/dashboard/stats`)
         if (response.ok) {
           const data = await response.json()
           setStats(data)
